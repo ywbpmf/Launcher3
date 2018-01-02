@@ -1,0 +1,107 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        google()
+    }
+    dependencies {
+//        classpath 'com.android.tools.build:gradle:2.3.1'
+//        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.0'
+
+        classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.2'
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        flavorDimensions "versionCode"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    productFlavors {
+        aosp {
+            applicationId 'com.my.launcher3'
+            testApplicationId 'com.my.launcher3.tests'
+        }
+    }
+    sourceSets {
+        main {
+            res.srcDirs = ['res']
+            java.srcDirs = ['src', 'src_config']
+            manifest.srcFile 'AndroidManifest-common.xml'
+            proto.srcDirs 'protos/'
+        }
+
+        androidTest {
+            java.srcDirs = ['tests/src']
+            res.srcDirs = ['tests/res']
+            manifest.srcFile "tests/AndroidManifest-common.xml"
+        }
+
+        aosp {
+            manifest.srcFile "AndroidManifest.xml"
+        }
+
+        aospAndroidTest {
+            manifest.srcFile "tests/AndroidManifest.xml"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    google()
+}
+
+final String SUPPORT_LIBS_VERSION = '26.1.0 '
+dependencies {
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:palette-v7:26.1.0'
+    implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-2'
+
+    testCompile 'junit:junit:4.12'
+    androidTestCompile "org.mockito:mockito-core:1.+"
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
+    androidTestCompile "com.android.support:support-annotations:${SUPPORT_LIBS_VERSION}"
+}
+
+protobuf {
+    // Configure the protoc executable
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.0.0-alpha-3'
+
+        generateProtoTasks {
+            all().each { task ->
+                task.builtins {
+                    remove java
+                    javanano {
+                        option "java_package=launcher_log.proto|com.android.launcher3.userevent.nano"
+                        option "enum_style=java"
+                    }
+                }
+            }
+        }
+    }
+}
